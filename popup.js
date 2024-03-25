@@ -1,5 +1,4 @@
 let defaultorder = [
-    // I don't know how field events work
     "4x800 Meter Relay",
     "100 Meter Hurdles",
     "100 Meter Dash",
@@ -12,10 +11,24 @@ let defaultorder = [
     "200 Meter Dash",
     "3200 Meter Run",
     "4x400 Meter Relay",
+    // I don't know how field events work
 ];
 
 function addEventRow(event) {
     $("#sortable-events").append($('<li>'+event+'</li>'))
+}
+
+function create_page_config() {
+    eventorder = $.map($("#sortable-events li"), (el) => el.innerHTML);
+    console.log(eventorder)
+
+    let options = {
+        'events': eventorder,
+        'girls_first': true,
+        'include_empty': true
+    }
+
+    return options
 }
 
 function buildPopup(eventlist) {
@@ -35,6 +48,7 @@ function buildPopup(eventlist) {
         addEventRow(event)
     })
 
+    // Add action to the sort button
     $('#sortbutton').click(async function() {
         let tabid = await getTabId()
 
@@ -43,17 +57,9 @@ function buildPopup(eventlist) {
             files: ['reformat.js']
         });
 
-        eventorder = $.map($("#sortable-events li"), (el) => el.innerHTML);
-        console.log(eventorder)
-
-        let options = {
-            'events': eventorder,
-            'girls_first': true,
-            'include_empty': true
-        }
-
+        // send our configuration to the page
         // delay the message slightly
-        setTimeout(() => chrome.tabs.sendMessage(tabid, {'events': eventorder}), 200);
+        setTimeout(() => chrome.tabs.sendMessage(tabid, create_page_config()), 200);
     });
 }
 
