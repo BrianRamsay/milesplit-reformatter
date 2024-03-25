@@ -51,7 +51,9 @@ function buildPopup(eventlist) {
             'girls_first': true,
             'include_empty': true
         }
-        chrome.tabs.sendMessage(tabid, {'events': eventorder});
+
+        // delay the message slightly
+        setTimeout(() => chrome.tabs.sendMessage(tabid, {'events': eventorder}), 200);
     });
 }
 
@@ -85,54 +87,4 @@ async function gather() {
 
 console.log("running gather script on page")
 gather()
-
-/*
-function test() {
-    console.log("WHY???")
-    document.innerHTML = '';
-}
-
-// Listen for clicks on the extension icon
-chrome.action.onClicked.addListener((tab) => {
-  console.log('test')
-
-  // Execute content script to change html
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: test
-  });
-
-  // Execute content script to reorder table rows
-  chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: reorderTableRows
-  });
-});
-
-// Function to reorder table rows
-function reorderTableRows() {
-  console.log("reordering")
-  alert("wtf")
-
-  // Find the first table on the page
-  const table = document.querySelector('table');
-  if (table) {
-    // Find all rows in the table except the header row
-    const rows = Array.from(table.querySelectorAll('tr')).slice(1);
-
-    // Sort rows alphabetically based on the content of the first cell (you can modify this based on your needs)
-    rows.sort((a, b) => {
-      const textA = a.cells[0].innerText.trim().toLowerCase();
-      const textB = b.cells[0].innerText.trim().toLowerCase();
-      return textA.localeCompare(textB);
-    });
-
-    // Remove existing rows from the table
-    rows.forEach(row => row.remove());
-
-    // Add sorted rows back to the table
-    rows.forEach(row => table.appendChild(row));
-  }
-}
-*/
 
