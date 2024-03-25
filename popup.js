@@ -14,31 +14,25 @@ let defaultorder = [
     "4x400 Meter Relay",
 ];
 
-function addEventRow(event, list) {
-    //const li = document.createElement("li")
-    //li.textContent = event
-
-    //const input = document.createElement("input")
-
-    $(list).append($('<li>'+event+'</li>'))
+function addEventRow(event) {
+    $("#sortable-events").append($('<li>'+event+'</li>'))
 }
 
 function buildPopup(eventlist) {
     console.log("set up popup")
-    let list = document.getElementById("sortable-events")
 
     // start with the events in our default order
     defaultorder.forEach(function(event) {
         let idx = eventlist.indexOf(event)
         if(idx > -1) {
-            addEventRow(event, list)
+            addEventRow(event)
             eventlist.splice(idx,1)
         }
     })
 
     // put the rest of the events in
     eventlist.forEach(function(event) {
-        addEventRow(event, list)
+        addEventRow(event)
     })
 
     $('#sortbutton').click(async function() {
@@ -64,9 +58,8 @@ function buildPopup(eventlist) {
 //console.log("add listener for messages")
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
+    console.log("Received message from a content script: " 
+        + sender.tab.url)
     
     if(request.events) {
         buildPopup(request.events)
