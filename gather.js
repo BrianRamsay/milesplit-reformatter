@@ -6,14 +6,11 @@ var headers = document.getElementsByTagName('th')
 // parse out just the name of the event
 var eventlist = Array.from(headers).map((i) => {
     let m = i.innerHTML.match(/(MS|HS) (Boys|Girls) (.*):/)
-    if(m && m.length > 3) {
-        return m[3]
-    } else {
-        return false
-    }
+    return (m && m.length > 3) ? m[3] : false
 
-// remove bad headers, then remove duplicates
+  // remove bad headers
 }).filter((i) => i)
+  // remove duplicates
   .filter((v,i,arr) => arr.indexOf(v) === i)
 
 //console.log(eventlist)
