@@ -1,3 +1,14 @@
+h1, h2{
+	font-size: 100%;
+}
+h1 {
+	font-size: 1.2em;
+	margin:0px;
+}
+h2 {
+	font-size: 1.4em;
+	margin-bottom:5px;
+}
 table tr th {
     padding-top:15px;
 }

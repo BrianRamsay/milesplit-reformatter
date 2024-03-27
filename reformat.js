@@ -1,4 +1,6 @@
-console.log("reformatting")
+// TODO Group selection and ordering in popup
+// TODO Event selection and ordering in popup
+// TODO Cache events somehow so that re-opening the extension works
 
 var g_entries = null
 var g_options = null
@@ -51,8 +53,10 @@ function build_entry_list() {
 function build_header(event,groups) {
     let html = '<tr>'
     let group_html = []
+	let total_entries = 0
     groups.forEach(group => {
         let event_entries = g_entries[event][group]
+		total_entries += event_entries.length
         let pl = event_entries.length == 1 ? 'y' : 'ies' 
         let cols = groups.length == 1 ? 4 : 2
 
@@ -60,6 +64,9 @@ function build_header(event,groups) {
     });
     html += group_html.join("<td></td>") // if two columns, add spacer
     html += '</tr>'
+
+	if(total_entries == 0 && !g_options.include_empty)
+		return '';
 
     return html;
 }
