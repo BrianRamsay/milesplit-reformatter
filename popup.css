@@ -2,6 +2,27 @@ body {
     min-width:300px;
 }
 
+ul {
+    margin:0px;
+    list-style-type: none;
+    padding-left: 0px;
+}
+
 #no-milesplit {
 	color: red;
+}
+
+button {
+    margin: 5px auto 0px auto;
+    display:block;
+}
+
+table tr td {
+    vertical-align:top;
+}
+table tr th {
+    text-align: left;
+}
+td.spacer {
+	width: 10px;
 }

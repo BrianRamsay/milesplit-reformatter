@@ -11,17 +11,24 @@
 		<p>This extension only works on milesplit.com sites!</p>
 	</div>
 	<div style="display:none" id="yes-milesplit">
-		<p>Select your event order:</p>
-		<ul id="sortable-events"></ul>
+        <table>
+            <tr>
+                <th><p>Event Order:</p></th>
+                <td class='spacer'></td>
+                <th><p>Team Order:</p></th>
+            </tr>
+            <tr>
+                <td><ul id="sortable-events"></ul></td>
+                <td class='spacer'></td>
+                <td><ul id="sortable-teams"></ul></td>
+            </tr>
+        </table>
 
-		<input id="double-col-box" type="checkbox" />
-		<label for="double-col-box">Multi-column layout</label>
+        <hr>
+
+		<input id="multi-col-box" type="checkbox" />
+		<label for="multi-col-box">Multi-column layout</label>
 		<br>
-
-		<input id="girls-first-box" checked type="checkbox" />
-		<label for="girls-first-box">Run girls first</label>
-		<br>
-
 
 		<input id="include-empty-box" checked type="checkbox" />
 		<label for="include-empty-box">Include events with no entries</label>

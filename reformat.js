@@ -1,10 +1,28 @@
-// TODO Group selection and ordering in popup
-// TODO Event selection and ordering in popup
+// TODO Group ordering in popup
+// TODO Event ordering in popup
 // TODO Cache events somehow so that re-opening the extension works
 
 var g_entries = null
 var g_options = null
 
+/*
+ * Function: build_entry_list
+ *
+ * Return a dictionary with events keyed to a list of their entries. 
+ *
+ * Each relay entry is a list of 4 values, for each name. Each non-relay
+ * entry is a list of 2 values, the athlete and a seed time (if it exists).
+ *
+ * E.g., {'100 Meter Dash': [
+ *          ['Usain Bolt', '9.58'],
+ *          ['Derice Bannock', '9.9'],
+ *          ['Jeremy Clarkson', '']
+ *        ], 
+ *        '4x800 Meter Relay': [
+ *          ['War','Famine', 'Death', 'Conquest']
+ *        ]
+ *       }
+ */
 function build_entry_list() {
     if(g_entries)
         return g_entries
@@ -50,6 +68,12 @@ function build_entry_list() {
     g_entries = events
 }
 
+/*
+ * Function: build_header
+ *
+ * Return the table row html for an event header. Works for single or multi-column headers.
+ * If there are no entries and we don't want to show those, return an empty string.
+ */
 function build_header(event,groups) {
     let html = '<tr>'
     let group_html = []
@@ -71,6 +95,11 @@ function build_header(event,groups) {
     return html;
 }
 
+/*
+ * Function: build_entries
+ *
+ * Return the table row html for all event entries. Works for single or multi-column display.
+ */
 function build_entries(event,groups) {
 	/******** single-column *********/
     if(groups.length == 1) {
@@ -88,13 +117,15 @@ function build_entries(event,groups) {
 
 	/******** multi-column *********/
 	let maxentries = Math.max(...groups.map(g => g_entries[event][g].length))
-	// create 2D array
+
+	// create 2D array (ok, technically 3D because each entry is a 2 or 4 element array)
 	let rows = Array.from({length:maxentries},
-				e=>Array.from({length:groups.length}, y=>['','']))
+			e=>Array.from({length:groups.length}, y=>['','']))
+
 	groups.forEach((group,groupidx) => {
 		let event_entries = g_entries[event][group]
 
-		// split relay entries into pairs
+		// split relay entries into pairs for multi-column
 		if(event.includes("Relay")) {
 			event_entries = []
 			g_entries[event][group].forEach(entry => {
@@ -104,6 +135,8 @@ function build_entries(event,groups) {
 					x += 2
 				}
 			});
+
+            // change our max entries and add to the length of the array if necessary
 			maxentries = Math.max(maxentries,event_entries.length)
 			while(rows.length < maxentries) {
 				rows.push(Array.from({length:groups.length}, y=>['','']))
@@ -117,6 +150,7 @@ function build_entries(event,groups) {
 		}
 	});
 
+    // turn the rows data structure into html
     let html = ''
 	rows.forEach(row => {
 		html += '<tr>'
@@ -127,6 +161,12 @@ function build_entries(event,groups) {
 	return html
 }
 
+/*
+ * Function: reformat_page
+ *
+ * Clear contents of the old page (saving a few bits of information), and rebuild
+ * according to our display options.
+ */
 function reformat_page() {
     // get all entries before clearing the page
     $('table').last().remove();
@@ -140,20 +180,13 @@ function reformat_page() {
     body.html(`
         <h2>${team_text}</h2>
         <h1>${meet_text}</h1>
-        <p>Track events are in proper running order. Field events are not.</p>
+        <p>Track events should be in proper running order. Field events are not.</p>
         <table><tbody></tbody></table>
     `);
-    $('table').css("width", g_options.double_col ? "100%" : "75%")
+    $('table').css("width", g_options.multi_col ? "100%" : "75%")
 
 
     let tbl = $('table tbody').first();
-
-    // TODO short-term solution. make more generic (for HS + mixed MS/HS)
-    let grouporder = ["MS Girls", "MS Boys"];
-    if(!g_options.girls_first) {
-        grouporder.reverse()
-    }
-
     g_options.events.forEach(function(event) {
         if(!(event in g_entries)) {
             console.log("Unknown event: " + event)
@@ -161,11 +194,11 @@ function reformat_page() {
         }
 
         var html = ''
-        if(g_options.double_col) {
-            html += build_header(event,grouporder)
-            html += build_entries(event,grouporder)
+        if(g_options.multi_col) {
+            html += build_header(event,g_options.teams)
+            html += build_entries(event,g_options.teams)
         } else {
-            grouporder.forEach(group => {
+            g_options.teams.forEach(group => {
                 html += build_header(event,[group])
                 html += build_entries(event,[group])
             });
@@ -173,8 +206,6 @@ function reformat_page() {
         html += '<tr></tr>'
         tbl.append($(html))
     });
-
-    //console.log(entries)
 }
 
 // listen for our reformat details
@@ -183,7 +214,7 @@ chrome.runtime.onMessage.addListener(
     console.log("Received message from extension")
     
     if(request.events) {
-        console.log(request.events)
+        // console.log(request)
         g_options = request
         reformat_page()
 

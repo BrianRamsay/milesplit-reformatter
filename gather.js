@@ -1,21 +1,23 @@
 // parse page to get list of events
 
 // get table header rows
-var headers = document.getElementsByTagName('th')
 
 // parse out just the name of the event
-var eventlist = Array.from(headers).map((i) => {
-    let m = i.innerHTML.match(/(MS|HS) (Boys|Girls) (.*):/)
-    return (m && m.length > 3) ? m[3] : false
+var eventlist = []
+var teamlist = []
 
-  // remove bad headers
-}).filter((i) => i)
-  // remove duplicates
-  .filter((v,i,arr) => arr.indexOf(v) === i)
+$('th').each((idx,h) => {
+    let m = h.innerHTML.match(/((MS|HS) (Boys|Girls)) (.*):/)
+    if (m && m.length > 4) {
+        eventlist.push(m[4])
+        teamlist.push(m[1])
+    }
+});
 
-//console.log(eventlist)
-
-// send events back to extension
+// send non-duplicates back to extension
 if(eventlist.length) {
-    chrome.runtime.sendMessage({events: eventlist});
+    chrome.runtime.sendMessage({
+        events: eventlist.filter((v,i,arr) => arr.indexOf(v) === i),
+        teams: teamlist.filter((v,i,arr) => arr.indexOf(v) === i)
+    });
 }

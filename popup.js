@@ -15,42 +15,52 @@ let defaultorder = [
 ];
 
 var events_from_page = null;
+var teams_from_page = null;
 var reformat_sent = false;
 
-function addEventRow(event) {
-    $("#sortable-events").append($('<li>'+event+'</li>'))
+function addSortRow(table,item) {
+    var id = Math.floor(Math.random() * Date.now())
+    $("#sortable-"+table).append($(`<li><input id="${id}" type='checkbox' checked /><label for="${id}">${item}</label></li>`))
 }
 
+function getSortedRows(table) {
+    return $("#sortable-"+table+" li").filter((idx,li) => $(li).children('input:checkbox').is(':checked'))
+                                      .map((idx,li) => li.innerText).toArray();
+}
+
+/*
+ *
+ */
 function create_page_config() {
-    eventorder = $.map($("#sortable-events li"), (el) => el.innerHTML);
-    console.log(eventorder)
-
-    let options = {
-        'events': eventorder,
-        'girls_first': $("#girls-first-box").is(":checked"),
+    return {
+        'events': getSortedRows('events'),
+        'teams': getSortedRows('teams'),
         'include_empty': $("#include-empty-box").is(":checked"),
-        'double_col': $("#double-col-box").is(":checked")
+        'multi_col': $("#multi-col-box").is(":checked")
     }
-
-    return options
 }
 
 function buildPopup() {
-    console.log("set up popup")
     let eventlist = events_from_page
+    let teamlist = teams_from_page
 
     // start with the events in our default order
     defaultorder.forEach(function(event) {
         let idx = eventlist.indexOf(event)
         if(idx > -1) {
-            addEventRow(event)
+            addSortRow('events',event)
             eventlist.splice(idx,1)
         }
     })
 
     // put the rest of the events in
     eventlist.forEach(function(event) {
-        addEventRow(event)
+        addSortRow('events',event)
+    })
+
+    // put the teams in
+    teamlist.forEach(function(team) {
+        addSortRow('teams',team)
     })
 
     // Add action to the sort button
@@ -74,10 +84,12 @@ function buildPopup() {
 // Listen for the events coming from our page
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    if(request.events) {
+    if(request.events && request.events.length) {
         events_from_page = request.events
-        console.log(events_from_page)
+        teams_from_page = request.teams
+
         buildPopup()
+
         $('#no-milesplit').hide()
         $('#yes-milesplit').show()
     }
@@ -97,6 +109,5 @@ async function gather() {
     });
 }
 
-console.log("running gather script on page")
 gather()
 
