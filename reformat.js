@@ -50,23 +50,24 @@ function build_entry_list() {
 
 function build_header(event,groups) {
     let html = '<tr>'
-    let grouphtml = []
+    let group_html = []
     groups.forEach(group => {
         let event_entries = g_entries[event][group]
         let pl = event_entries.length == 1 ? 'y' : 'ies' 
         let cols = groups.length == 1 ? 4 : 2
 
-        grouphtml.push(`<th colspan="${cols}">${group} ${event}: ${event_entries.length} Entr${pl}</th>`)
+        group_html.push(`<th colspan="${cols}">${group} ${event}: ${event_entries.length} Entr${pl}</th>`)
     });
-    html += grouphtml.join("<td></td>") // if two columns, add spacer
+    html += group_html.join("<td></td>") // if two columns, add spacer
     html += '</tr>'
 
     return html;
 }
 
 function build_entries(event,groups) {
-    let html = ''
+	/******** single-column *********/
     if(groups.length == 1) {
+    	let html = ''
         let trailer = event.includes("Relay") ? '' : '<td colspan="2"></td>' 
         groups.forEach(group => {
             let event_entries = g_entries[event][group]
@@ -75,43 +76,48 @@ function build_entries(event,groups) {
             });
         });
 
-	// multi-column
-    } else {
-        let maxentries = Math.max(...groups.map(g => g_entries[event][g].length))
-        // create 2D array
-        let rows = Array.from({length:maxentries},
-                    e=>Array.from({length:groups.length}, y=>['','']))
-        groups.forEach((group,groupidx) => {
-            let event_entries = g_entries[event][group]
+    	return html
+	}
 
-            // split relay entries into pairs
-            if(event.includes("Relay")) {
-                maxentries = Math.ceil(maxentries / 2)
-                event_entries = []
-                var x = 0
-                while(typeof g_entries[event][group][x] !== 'undefined') {
-                    event_entries.push(g_entries[event][group][x].slice(x,2))
-                    x += 2
-                }
-            }
-            // put entries into 2D array
-            for(var row=0; row < maxentries; row++) {
-                if(row < event_entries.length) {
-                    rows[row][groupidx] = event_entries[row]
-                }
-            }
-        });
+	/******** multi-column *********/
+	let maxentries = Math.max(...groups.map(g => g_entries[event][g].length))
+	// create 2D array
+	let rows = Array.from({length:maxentries},
+				e=>Array.from({length:groups.length}, y=>['','']))
+	groups.forEach((group,groupidx) => {
+		let event_entries = g_entries[event][group]
 
-        console.log(rows)
-        rows.forEach(row => {
-            html += '<tr>'
-            html += row.map(group => `<td>${group.join('</td><td>')}</td>`).join('<td class="spacer"></td>');
-            html += '</tr>'
-            console.log(html)
-        });
-    }
+		// split relay entries into pairs
+		if(event.includes("Relay")) {
+			event_entries = []
+			g_entries[event][group].forEach(entry => {
+				var x = 0
+				while(typeof entry[x] !== 'undefined') {
+					event_entries.push(entry.slice(x,x+2))
+					x += 2
+				}
+			});
+			maxentries = Math.max(maxentries,event_entries.length)
+			while(rows.length < maxentries) {
+				rows.push(Array.from({length:groups.length}, y=>['','']))
+			}
+		}
+		// put entries into 2D array
+		for(var row=0; row < maxentries; row++) {
+			if(row < event_entries.length) {
+				rows[row][groupidx] = event_entries[row]
+			}
+		}
+	});
 
-    return html
+    let html = ''
+	rows.forEach(row => {
+		html += '<tr>'
+		html += row.map(group => `<td>${group.join('</td><td>')}</td>`).join('<td class="spacer"></td>');
+		html += '</tr>'
+	});
+
+	return html
 }
 
 function reformat_page() {
