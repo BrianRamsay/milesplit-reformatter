@@ -1,11 +1,18 @@
+html {
+}
 body {
-    min-width:300px;
+    min-width:350px;
 }
 
 ul {
     margin:0px;
     list-style-type: none;
     padding-left: 0px;
+}
+
+ul li {
+    vertical-align: top;
+    margin:5px;
 }
 
 #no-milesplit {
@@ -25,4 +32,18 @@ table tr th {
 }
 td.spacer {
 	width: 10px;
+}
+
+.placeholder {
+    min-height: 20px;
+    background-color: #eee;
+}
+
+img {
+    background-size: 20px 20px;
+    width: 20px;
+    height: 20px;
+    align: top;
+    cursor: grab;
+    margin-bottom: -3px;
 }

@@ -12,7 +12,7 @@
     },
     "content_scripts": [{
         "matches": ["https://*.milesplit.com/*"],
-        "js": ["jquery-3.7.1.slim.min.js"],
+        "js": ["jquery-3.7.1.min.js"],
         "css": ["page.css"],
         "run_at": "document_end"
     }],

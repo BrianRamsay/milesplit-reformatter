@@ -19,13 +19,17 @@ var teams_from_page = null;
 var reformat_sent = false;
 
 function addSortRow(table,item) {
-    var id = Math.floor(Math.random() * Date.now())
-    $("#sortable-"+table).append($(`<li><input id="${id}" type='checkbox' checked /><label for="${id}">${item}</label></li>`))
+    var id = "i" + Math.floor(Math.random() * Date.now())
+    $("#sortable-"+table).append($(`<li>
+            <img class="handle" src="images/handle.svg" alt="grab to sort list" />
+            <input id="${id}" type='checkbox' checked />
+            <label for="${id}">${item}</label>
+        </li>`))
 }
 
 function getSortedRows(table) {
     return $("#sortable-"+table+" li").filter((idx,li) => $(li).children('input:checkbox').is(':checked'))
-                                      .map((idx,li) => li.innerText).toArray();
+                                      .map((idx,li) => li.innerText.trim()).toArray();
 }
 
 /*
@@ -62,9 +66,10 @@ function buildPopup() {
     teamlist.forEach(function(team) {
         addSortRow('teams',team)
     })
+    $("ul").sortable({handle: '.handle',placeholder: 'placeholder'})
 
-    // Add action to the sort button
-    $('#sortbutton').click(async function() {
+    // Add action to the reformat button
+    $('#reformat').click(async function() {
         let tabid = await getTabId()
 
         if(!reformat_sent) {

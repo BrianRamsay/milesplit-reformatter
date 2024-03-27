@@ -1,5 +1,3 @@
-// TODO Group ordering in popup
-// TODO Event ordering in popup
 // TODO Cache events somehow so that re-opening the extension works
 
 var g_entries = null
@@ -214,7 +212,7 @@ chrome.runtime.onMessage.addListener(
     console.log("Received message from extension")
     
     if(request.events) {
-        // console.log(request)
+        console.log(request)
         g_options = request
         reformat_page()
 
