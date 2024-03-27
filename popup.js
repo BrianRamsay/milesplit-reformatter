@@ -14,6 +14,9 @@ let defaultorder = [
     // I don't know how field events work
 ];
 
+var events_from_page = null;
+var reformat_sent = false;
+
 function addEventRow(event) {
     $("#sortable-events").append($('<li>'+event+'</li>'))
 }
@@ -24,15 +27,17 @@ function create_page_config() {
 
     let options = {
         'events': eventorder,
-        'girls_first': true,
-        'include_empty': true
+        'girls_first': $("#girls-first-box").is(":checked"),
+        'include_empty': $("#include-empty-box").is(":checked"),
+        'double_col': $("#double-col-box").is(":checked")
     }
 
     return options
 }
 
-function buildPopup(eventlist) {
+function buildPopup() {
     console.log("set up popup")
+    let eventlist = events_from_page
 
     // start with the events in our default order
     defaultorder.forEach(function(event) {
@@ -52,10 +57,13 @@ function buildPopup(eventlist) {
     $('#sortbutton').click(async function() {
         let tabid = await getTabId()
 
-        chrome.scripting.executeScript({
-            target: {tabId: tabid},
-            files: ['reformat.js']
-        });
+        if(!reformat_sent) {
+            chrome.scripting.executeScript({
+                target: {tabId: tabid},
+                files: ['reformat.js']
+            });
+            reformat_sent = true;
+        }
 
         // send our configuration to the page
         // delay the message slightly
@@ -63,17 +71,15 @@ function buildPopup(eventlist) {
     });
 }
 
-//console.log("add listener for messages")
+// Listen for the events coming from our page
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
-    console.log("Received message from a content script: " 
-        + sender.tab.url)
-    
     if(request.events) {
-        buildPopup(request.events)
-    } else {
-        // TODO indicate in popup that we don't operate on this page
-        console.log("Nothing to do on this page")
+        events_from_page = request.events
+        console.log(events_from_page)
+        buildPopup()
+        $('#no-milesplit').hide()
+        $('#yes-milesplit').show()
     }
 });
 

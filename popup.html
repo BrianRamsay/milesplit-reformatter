@@ -7,10 +7,28 @@
     <link href="popup.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
-    <p>Select your event order:</p>
-    <ul id="sortable-events"></ul>
+	<div id="no-milesplit">
+		<p>This extension only works on milesplit.com sites!</p>
+	</div>
+	<div style="display:none" id="yes-milesplit">
+		<p>Select your event order:</p>
+		<ul id="sortable-events"></ul>
 
-    <button id="sortbutton">Reformat Page</button>
+		<input id="double-col-box" type="checkbox" />
+		<label for="double-col-box">Multi-column layout</label>
+		<br>
+
+		<input id="girls-first-box" checked type="checkbox" />
+		<label for="girls-first-box">Run girls first</label>
+		<br>
+
+
+		<input id="include-empty-box" checked type="checkbox" />
+		<label for="include-empty-box">Include events with no entries</label>
+		<br>
+
+		<button id="sortbutton">Reformat Page</button>
+	</div>
 
 	<script src="jquery-3.7.1.slim.min.js"></script>
 	<!-- <script src="jquery-ui-1.13.2.js"></script> -->

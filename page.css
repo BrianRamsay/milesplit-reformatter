@@ -1,3 +1,7 @@
 table tr th {
     padding-top:15px;
 }
+
+td.spacer {
+	width: 20px;
+}

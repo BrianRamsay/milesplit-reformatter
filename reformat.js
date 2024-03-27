@@ -1,6 +1,12 @@
 console.log("reformatting")
 
+var g_entries = null
+var g_options = null
+
 function build_entry_list() {
+    if(g_entries)
+        return g_entries
+
     let events = {}
     var current_group = ''
     var current_event = ''
@@ -39,13 +45,79 @@ function build_entry_list() {
         }
     });
 
-    return events
+    g_entries = events
 }
 
-function reformat_page(options) {
+function build_header(event,groups) {
+    let html = '<tr>'
+    let grouphtml = []
+    groups.forEach(group => {
+        let event_entries = g_entries[event][group]
+        let pl = event_entries.length == 1 ? 'y' : 'ies' 
+        let cols = groups.length == 1 ? 4 : 2
+
+        grouphtml.push(`<th colspan="${cols}">${group} ${event}: ${event_entries.length} Entr${pl}</th>`)
+    });
+    html += grouphtml.join("<td></td>") // if two columns, add spacer
+    html += '</tr>'
+
+    return html;
+}
+
+function build_entries(event,groups) {
+    let html = ''
+    if(groups.length == 1) {
+        let trailer = event.includes("Relay") ? '' : '<td colspan="2"></td>' 
+        groups.forEach(group => {
+            let event_entries = g_entries[event][group]
+            event_entries.forEach(e => {
+                html += `<tr><td>${e.join("</td><td>")}</td>${trailer}</tr>`
+            });
+        });
+
+	// multi-column
+    } else {
+        let maxentries = Math.max(...groups.map(g => g_entries[event][g].length))
+        // create 2D array
+        let rows = Array.from({length:maxentries},
+                    e=>Array.from({length:groups.length}, y=>['','']))
+        groups.forEach((group,groupidx) => {
+            let event_entries = g_entries[event][group]
+
+            // split relay entries into pairs
+            if(event.includes("Relay")) {
+                maxentries = Math.ceil(maxentries / 2)
+                event_entries = []
+                var x = 0
+                while(typeof g_entries[event][group][x] !== 'undefined') {
+                    event_entries.push(g_entries[event][group][x].slice(x,2))
+                    x += 2
+                }
+            }
+            // put entries into 2D array
+            for(var row=0; row < maxentries; row++) {
+                if(row < event_entries.length) {
+                    rows[row][groupidx] = event_entries[row]
+                }
+            }
+        });
+
+        console.log(rows)
+        rows.forEach(row => {
+            html += '<tr>'
+            html += row.map(group => `<td>${group.join('</td><td>')}</td>`).join('<td class="spacer"></td>');
+            html += '</tr>'
+            console.log(html)
+        });
+    }
+
+    return html
+}
+
+function reformat_page() {
     // get all entries before clearing the page
     $('table').last().remove();
-    var entries = build_entry_list()
+    build_entry_list()
 
     meet_text = $('h1').first().text()
     team_text = $('h2').first().text()
@@ -54,34 +126,39 @@ function reformat_page(options) {
     let body = $('body')
     body.html(`
         <h2>${team_text}</h2>
-        <h2>${meet_text}</h2>
+        <h1>${meet_text}</h1>
         <p>Track events are in proper running order. Field events are not.</p>
         <table><tbody></tbody></table>
     `);
-    $('table').css("width", "75%")
+    $('table').css("width", g_options.double_col ? "100%" : "75%")
 
 
     let tbl = $('table tbody').first();
 
     // TODO short-term solution. make more generic (for HS + mixed MS/HS)
     let grouporder = ["MS Girls", "MS Boys"];
+    if(!g_options.girls_first) {
+        grouporder.reverse()
+    }
 
-    options.events.forEach(function(eventname) {
-        if(!(eventname in entries)) {
-            console.log("Unknown eventname: " + eventname)
+    g_options.events.forEach(function(event) {
+        if(!(event in g_entries)) {
+            console.log("Unknown event: " + event)
             return
         }
 
-        grouporder.forEach(group => {
-            let event_entries = entries[eventname][group]
-            let trailer = eventname.includes("Relay") ? '' : '<td colspan="2"></td>' 
-            let pl = event_entries.length == 1 ? 'y' : 'ies' 
-            tbl.append($(`<tr><th colspan="4">${group} ${eventname}: ${event_entries.length} Entr${pl}</th></tr>`))
-            event_entries.forEach(e => {
-                tbl.append($(`<tr><td>${e.join("</td><td>")}</td>${trailer}</tr>`))
+        var html = ''
+        if(g_options.double_col) {
+            html += build_header(event,grouporder)
+            html += build_entries(event,grouporder)
+        } else {
+            grouporder.forEach(group => {
+                html += build_header(event,[group])
+                html += build_entries(event,[group])
             });
-        });
-        tbl.append($('<tr></tr>'))
+        }
+        html += '<tr></tr>'
+        tbl.append($(html))
     });
 
     //console.log(entries)
@@ -93,7 +170,9 @@ chrome.runtime.onMessage.addListener(
     console.log("Received message from extension")
     
     if(request.events) {
-        reformat_page(request)
+        console.log(request.events)
+        g_options = request
+        reformat_page()
 
     } else {
         console.log("Unknown response from extension!")

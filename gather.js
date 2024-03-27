@@ -16,4 +16,6 @@ var eventlist = Array.from(headers).map((i) => {
 //console.log(eventlist)
 
 // send events back to extension
-chrome.runtime.sendMessage({events: eventlist});
+if(eventlist.length) {
+    chrome.runtime.sendMessage({events: eventlist});
+}
