@@ -33,6 +33,13 @@ function build_entry_list() {
         if(event_h.length) {
             // get the group and event out of the header
             let text = event_h[0].innerHTML
+            //hax
+            text = text.replace("Girls 4X200", "MS Girls 4x200 Meter Relay")
+            text = text.replace("Boys 4x200", "MS Boys 4x200 Meter Relay")
+
+            if(!(text.includes("MS") || text.includes("HS"))) {
+                text = "MS " + text
+            }
             let m = text.match(/((MS|HS) (Boys|Girls)) (.*):/)
             // If we found group and event
             if(m && m.length > 4) {
